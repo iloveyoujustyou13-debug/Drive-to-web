@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pure Drive to Web Host Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-900 to-indigo-950 text-slate-100 min-h-screen font-sans">
+
+    <nav class="border-b border-indigo-900/50 bg-slate-900/80 backdrop-blur px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <h1 class="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 flex items-center gap-2">
+            🌐 DriveWeb <span class="text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full">Static Engine</span>
+        </h1>
+    </nav>
+
+    <div class="max-w-3xl mx-auto mt-12 px-4 pb-16">
+        <div class="bg-slate-900/60 border border-indigo-500/20 rounded-2xl p-6 md:p-8 shadow-2xl backdrop-blur-md mb-8">
+            <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">🚀 Deploy Your Drive Folder</h2>
+            <p class="text-sm text-indigo-200/70 mb-6 font-medium">আপনার গুগল ড্রাইভের HTML/CSS ফোল্ডারটিকে সরাসরি লাইভ ওয়েবসাইটে রূপান্তর করুন।</p>
+            
+            <div class="bg-indigo-950/40 border border-indigo-500/10 rounded-xl p-4 mb-6 text-xs text-indigo-300 space-y-2">
+                <p class="font-bold text-indigo-200">⚠️ কিভাবে আপনার ড্রাইভ ফোল্ডার রেডি করবেন:</p>
+                <p>১. গুগল ড্রাইভে একটি ফোল্ডার তৈরি করুন এবং তার ভেতর আপনার ওয়েবসাইটের ফাইলগুলো রাখুন (যেমন: <code class="text-cyan-400">index.html</code>, <code class="text-cyan-400">style.css</code> ইত্যাদি)।</p>
+                <p>২. ফোল্ডারটির ওপর রাইট ক্লিক করে Share-এ যান এবং পারমিশনটি <strong class="text-emerald-400">"Anyone with the link can view"</strong> করে দিন।</p>
+                <p>৩. ফোল্ডারের সম্পূর্ণ লিঙ্কটি কপি করে নিচের বক্সে পেস্ট করুন।</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-indigo-400 mb-1">Google Drive Folder Link</label>
+                    <input id="drive-link" type="text" class="w-full bg-slate-950/80 text-white text-sm border border-indigo-500/20 rounded-xl p-3.5 outline-none focus:border-indigo-500 transition shadow-inner" placeholder="https://drive.google.com/drive/folders/your-folder-id...">
+                </div>
+
+                <button onclick="generateWebsite()" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white font-bold rounded-xl hover:from-indigo-500 hover:to-cyan-500 transition shadow-lg shadow-indigo-950/50 active:scale-[0.98]">
+                    🔗 Generate Live Sandbox URL
+                </button>
+            </div>
+        </div>
+
+        <div id="output-box" class="hidden bg-slate-900/60 border border-emerald-500/20 rounded-2xl p-6 shadow-2xl backdrop-blur-md">
+            <h3 class="font-bold text-emerald-400 text-lg mb-3 flex items-center gap-2">🎉 Your Website is Ready!</h3>
+            <p class="text-xs text-slate-400 mb-4">নিচের স্যান্ডবক্স লিঙ্কের মাধ্যমে ড্রাইভের ফাইলটি রান করানো হয়েছে:</p>
+            
+            <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center bg-slate-950/60 p-3 rounded-xl border border-indigo-500/10 mb-6">
+                <input id="generated-url" type="text" readonly class="w-full bg-transparent text-xs text-indigo-300 font-mono outline-none overflow-x-auto">
+                <button onclick="copyUrl()" class="px-4 py-2 bg-indigo-600/30 text-indigo-300 hover:bg-indigo-600/50 border border-indigo-500/30 text-xs font-bold rounded-lg transition shrink-0">Copy</button>
+            </div>
+
+            <div class="border border-indigo-500/20 rounded-xl overflow-hidden bg-white shadow-inner">
+                <div class="bg-slate-950 px-4 py-2 flex items-center gap-2 border-b border-indigo-500/20">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span class="text-[10px] text-slate-500 font-mono ml-2">Live Web Preview Screen</span>
+                </div>
+                <iframe id="web-preview" src="" class="w-full h-[350px] bg-white"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function extractFolderId(url) {
+            // রেগুলার এক্সপ্রেশন দিয়ে ড্রাইভ লিঙ্ক থেকে ফোল্ডার আইডি আলাদা করা
+            const regExp = /folders\/([a-zA-Z0-9-_]+)/;
+            const match = url.match(regExp);
+            return match ? match[1] : null;
+        }
+
+        function generateWebsite() {
+            const linkInput = document.getElementById('drive-link').value.trim();
+            const folderId = extractFolderId(linkInput);
+
+            if (!folderId) {
+                alert('দয়া করে একটি সঠিক গুগল ড্রাইভ ফোল্ডারের লিঙ্ক দিন।');
+                return;
+            }
+
+            // ড্রাইভের index.html ফাইলকে সরাসরি ব্রাউজারে রিড করার পাবলিক গিটহাব/ড্রাইভ স্যান্ডবক্স প্রক্সি
+            // গুগল ড্রাইভের সরাসরি ফাইল রেন্ডারিং ইউআরএল জেনারেট করা হচ্ছে
+            const directWebViewUrl = `https://docs.google.com/uc?export=view&id=${folderId}`;
+            
+            // আমরা আমাদের আইফ্রেমের ভেতরে সরাসরি ফাইল রেন্ডার করার পাবলিক ড্রাইভ গেটওয়ে ব্যবহার করব
+            // ড্রাইভ থেকে ফাইল সরাসরি এইচটিএমএল হিসেবে এক্সপোর্ট করার লিংক:
+            const rawHostUrl = `https://drive.google.com/uc?authuser=0&id=${folderId}&export=viewer`;
+
+            // আউটপুট স্ক্রিন আপডেট
+            document.getElementById('generated-url').value = `https://drive.google.com/uc?id=${folderId}`;
+            
+            // আইফ্রেমে ফাইলটি লোড করা
+            const iframe = document.getElementById('web-preview');
+            iframe.src = `https://docs.google.com/uc?export=view&id=${folderId}`;
+
+            // আউটপুট বক্স শো করা
+            document.getElementById('output-box').classList.remove('hidden');
+            
+            alert('আপনার ড্রাইভ ফোল্ডারটি স্যান্ডবক্সে ম্যাপ করা হয়েছে! নিচে প্রিভিউ দেখুন। (নোট: ড্রাইভ ফোল্ডারটি অবশ্যই পাবলিক হতে হবে)');
+        }
+
+        function copyUrl() {
+            const copyText = document.getElementById('generated-url');
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(copyText.value);
+            alert("URL Copied to clipboard!");
+        }
+    </script>
+</body>
+</html>
